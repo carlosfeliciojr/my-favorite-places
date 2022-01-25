@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart';
@@ -28,8 +30,16 @@ class _LocationInputState extends State<LocationInput> {
   }
 
   Future<void> _getCurrentUserLocation() async {
-    final locationData = await Location().getLocation();
-    _showPreview(locationData.latitude!, locationData.longitude!);
+    try {
+      final locationData = await Location().getLocation();
+      _showPreview(locationData.latitude!, locationData.longitude!);
+      widget.onSelectPosition(
+        LatLng(locationData.latitude!, locationData.longitude!),
+      );
+    } catch (e) {
+      log(e.toString());
+      return;
+    }
   }
 
   Future<void> _selectOnMap() async {
