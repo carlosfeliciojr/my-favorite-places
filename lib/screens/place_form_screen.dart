@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:my_favorite_places/providers/great_places.dart';
 import 'package:my_favorite_places/widgets/image_input.dart';
 import 'package:my_favorite_places/widgets/location_input.dart';
@@ -16,19 +17,33 @@ class PlaceFormScreen extends StatefulWidget {
 class _PlaceFormScreenState extends State<PlaceFormScreen> {
   final _titleController = TextEditingController();
   File? _pickedImage;
+  LatLng? _pickedPosition;
 
   void _selectImage(File pickedImage) {
-    _pickedImage = pickedImage;
+    setState(() {
+      _pickedImage = pickedImage;
+    });
+  }
+
+  void _selectPosition(LatLng position) {
+    setState(() {
+      _pickedPosition = position;
+    });
+  }
+
+  bool _isValidForm() {
+    return _titleController.text.isNotEmpty &&
+        _pickedImage != null &&
+        _pickedPosition != null;
   }
 
   void _submitForm() {
-    if (_titleController.text.isEmpty || _pickedImage == null) {
-      return;
-    }
+    if (!_isValidForm()) return;
 
     Provider.of<GreatPlaces>(context, listen: false).addPlace(
       _titleController.text,
       _pickedImage!,
+      _pickedPosition!,
     );
 
     Navigator.of(context).pop();
@@ -57,7 +72,9 @@ class _PlaceFormScreenState extends State<PlaceFormScreen> {
                     const SizedBox(height: 10),
                     ImageInput(onSelectImage: _selectImage),
                     const SizedBox(height: 10),
-                    const LocationInput(),
+                    LocationInput(
+                      onSelectPosition: _selectPosition,
+                    ),
                   ],
                 ),
               ),
@@ -73,7 +90,7 @@ class _PlaceFormScreenState extends State<PlaceFormScreen> {
               elevation: MaterialStateProperty.all(0),
               tapTargetSize: MaterialTapTargetSize.shrinkWrap,
             ),
-            onPressed: _submitForm,
+            onPressed: _isValidForm() ? _submitForm : null,
           ),
         ],
       ),
